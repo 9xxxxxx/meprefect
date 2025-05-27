@@ -19,15 +19,69 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: first deployment
-  version: null
+- name: first-deployment
+  version: 0.0.1
   tags: []
   concurrency_limit: null
-  description: null
+  description: test jiu test
   entrypoint: main.py:etl_flow
+  parameters: {
+                "message":"wdnmd"
+  }
+  work_pool:
+    name: dev-pool-1
+    work_queue_name: for-dev
+    job_variables: {}
+  schedules: []
+
+- name: sync_sf_realtime_data
+  version: 0.0.1
+  tags: []
+  concurrency_limit: null
+  description: sync sf realtime data for observe the work
+  entrypoint: sync_db.py:sync_rt_data_flow
   parameters: {}
   work_pool:
-    name: my-work-pool
-    work_queue_name: null
+    name: dev-pool-1
+    work_queue_name: daily-jobs
+    job_variables: {}
+  schedules: []
+
+- name: sync_qc_record
+  version: 0.0.1
+  tags: []
+  concurrency_limit: null
+  description: sync qc record
+  entrypoint: Sync_QcRecord.py:sync_qcrecord_data_flow
+  parameters: {}
+  work_pool:
+    name: dev-pool-1
+    work_queue_name: daily-jobs
+    job_variables: {}
+  schedules: []
+
+- name: sync_exchange_components
+  version: 0.0.1
+  tags: []
+  concurrency_limit: null
+  description: sync EXchange components
+  entrypoint: Sync_ExChange_Components.py:sync_qcrecord_data_flow
+  parameters: {}
+  work_pool:
+    name: dev-pool-1
+    work_queue_name: daily-jobs
+    job_variables: {}
+  schedules: []
+
+- name: sync_bi_data
+  version: 0.0.1
+  tags: []
+  concurrency_limit: null
+  description: sync bi data
+  entrypoint: sync_bi_data.py:sync_bi_data_flow
+  parameters: {}
+  work_pool:
+    name: dev-pool-1
+    work_queue_name: daily-jobs
     job_variables: {}
   schedules: []
