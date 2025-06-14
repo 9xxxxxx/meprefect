@@ -1,0 +1,22 @@
+# ~/.prefect/prefect.toml
+# Windows 下路径通常为 C:\Users\你的用户名\.prefect\prefect.toml
+
+[profiles]
+
+[profiles.local]  # 默认 profile 名称是 local
+PREFECT_API_URL = "http://localhost:4200/api"
+PREFECT_ORION_UI_API_URL = "http://localhost:4200/api"
+PREFECT_UI_URL = "http://localhost:4200"
+PREFECT_LOGGING_LEVEL = "INFO"
+
+# 数据库配置：推荐使用 PostgreSQL，替代 SQLite
+PREFECT_ORION_DATABASE_CONNECTION_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/prefect"
+
+# 开启异步引擎优化（可选）
+PREFECT_API_DATABASE_CONNECTION_TIMEOUT = 20
+
+# 工作队列轮询时间（默认是 0.25 秒，适当加长避免频繁锁）
+PREFECT_API_WORK_QUEUE_POLL_INTERVAL = 1.0
+
+# 其他常见配置
+PREFECT_EXPERIMENTAL_WARNINGS_ENABLED = false

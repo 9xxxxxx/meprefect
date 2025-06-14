@@ -1,0 +1,9 @@
+active = "dev"
+
+[profiles.dev]
+PREFECT_API_URL = "http://localhost:4200/api"
+PREFECT_UI_URL = "http://localhost:4200"
+PREFECT_LOGGING_LEVEL = "INFO"
+PREFECT_API_DATABASE_CONNECTION_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/prefect"
+
+[profiles.NEW]
