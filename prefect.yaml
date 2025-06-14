@@ -19,27 +19,12 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: first-deployment
+- name: sync_bi_realtime_data
   version: 0.0.1
   tags: []
   concurrency_limit: null
-  description: test jiu test
-  entrypoint: main.py:etl_flow
-  parameters: {
-                "message":"wdnmd"
-  }
-  work_pool:
-    name: dev-pool-1
-    work_queue_name: for-dev
-    job_variables: {}
-  schedules: []
-
-- name: sync_sf_realtime_data
-  version: 0.0.1
-  tags: []
-  concurrency_limit: null
-  description: sync sf realtime data for observe the work
-  entrypoint: sync_db.py:sync_rt_data_flow
+  description: sync bi realtime data for observe the work
+  entrypoint: flows/sync_bi_rt_data.py:sync_rt_data_flow
   parameters: {}
   work_pool:
     name: dev-pool-1
@@ -52,7 +37,7 @@ deployments:
   tags: []
   concurrency_limit: null
   description: sync qc record
-  entrypoint: Sync_QcRecord.py:sync_qcrecord_data_flow
+  entrypoint: flows/Sync_QcRecord.py:sync_qcrecord_data_flow
   parameters: {}
   work_pool:
     name: dev-pool-1
@@ -65,7 +50,7 @@ deployments:
   tags: []
   concurrency_limit: null
   description: sync EXchange components
-  entrypoint: Sync_ExChange_Components.py:sync_qcrecord_data_flow
+  entrypoint: flows/Sync_ExChange_Components.py:sync_exchange_components_flow
   parameters: {}
   work_pool:
     name: dev-pool-1
@@ -78,10 +63,49 @@ deployments:
   tags: []
   concurrency_limit: null
   description: sync bi data
-  entrypoint: sync_bi_data.py:sync_bi_data_flow
+  entrypoint: flows/sync_bi_data.py:sync_bi_data_flow
   parameters: {}
   work_pool:
     name: dev-pool-1
     work_queue_name: daily-jobs
+    job_variables: {}
+  schedules: []
+
+- name: send_file_to_tjh
+  version: 0.0.1
+  tags: []
+  concurrency_limit: null
+  description: send_file_to_tjh
+  entrypoint: flows/send_file_to_tjh.py:send_file_to_tjh
+  parameters: {}
+  work_pool:
+    name: dev-pool-1
+    work_queue_name: daily-jobs
+    job_variables: {}
+  schedules: []
+
+- name: process_bi_table
+  version: 0.0.1
+  tags: []
+  concurrency_limit: null
+  description: process bi table
+  entrypoint: flows/create_data.py:mysql_data_processing_flow
+  parameters: {}
+  work_pool:
+    name: dev-pool-1
+    work_queue_name: daily-jobs
+    job_variables: {}
+  schedules: []
+
+- name: send_checkgroup_efficiency
+  version: 0.0.1
+  tags: []
+  concurrency_limit: null
+  description: send checkgroup efficiency
+  entrypoint: flows/send_checkgroup_efficiency.py:send_checkgroup_efficiency_flow
+  parameters: {}
+  work_pool:
+    name: worning-pool
+    work_queue_name: timing-job
     job_variables: {}
   schedules: []

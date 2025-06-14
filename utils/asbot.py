@@ -12,9 +12,10 @@ class AsBot:
         self.chat_name = chat_name
         self.token = self.get_token()
         self.chat_id = self.get_chat_id()
-        self.logger = get_run_logger()
+
 
     def get_token(self):
+        logger = get_run_logger()
         url = 'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal'
         data = {
         "Content-Type": "application/json; charset=utf-8",
@@ -22,10 +23,11 @@ class AsBot:
         "app_secret": self.app_secret
         }
         response = requests.request("POST", url, data=data,timeout=30)
-        self.logger.info("成功获取bearer token")
+        logger.info("成功获取bearer token")
         return json.loads(response.text)['tenant_access_token']
 
     def get_chat_id(self):
+        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/chats?page_size=20"
         payload = ''
 
@@ -37,11 +39,11 @@ class AsBot:
         items = json.loads(response.text)['data']['items']
         for item in items:
             if item['name'] == self.chat_name:
-                self.logger.info(f"成功获取{self.chat_name}的chat_id")
+                logger.info(f"成功获取{self.chat_name}的chat_id")
                 return item['chat_id']
-            
+
     def get_filekey(self, file_path, file_name, file_type, type_file):
-        
+        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/files"
         form = {'file_type': file_type,
                 'file_name': file_name,
@@ -50,15 +52,15 @@ class AsBot:
         Authorization = 'Bearer ' + self.token
         headers = {'Authorization': Authorization, 'Content-Type': multi_form.content_type}
         response = requests.request("POST", url, headers=headers, data=multi_form)
-        self.logger.info(f"上传文件获取file_key")
+        logger.info(f"上传文件获取file_key")
         if response.status_code == 200:
-            self.logger.info("获取file_key成功")
+            logger.info("获取file_key成功")
             return json.loads(response.content)['data']['file_key']
         else:
             return '好像没拿到file key'
 
     def get_imagekey(self,path):
-        
+        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/images"
         form = {'image_type': 'message',
                 'image': (open(path, 'rb'))}  # 需要替换具体的path
@@ -67,15 +69,15 @@ class AsBot:
         response = requests.request("POST", url, headers=headers, data=multi_form)
         decoded_string = response.content.decode('utf-8')
         image_key = json.loads(decoded_string)['data']['image_key']
-        self.logger.info("上传图片获取image_key")
+        logger.info("上传图片获取image_key")
         if response.status_code == 200:
-            self.logger.info("获取image_key成功")
+            logger.info("获取image_key成功")
             return image_key
         else:
             return '好像没拿到image key'
-    
-    def sendimage(self,image_path):
 
+    def sendimage(self,image_path):
+        logger = get_run_logger()
         msg = self.get_imagekey(image_path)
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type":"chat_id"}
@@ -94,11 +96,12 @@ class AsBot:
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, params=params, headers=headers, data=payload)
-        self.logger.info("正在发送图片~")
+        logger.info("正在发送图片~")
         if response.status_code == 200:
-            self.logger.info("发送图片成功！")
-            
+            logger.info("发送图片成功！")
+
     def sendfile(self, file_type, file_name, file_path,type_file):
+        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "chat_id"}
 
@@ -120,12 +123,40 @@ class AsBot:
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, params=params, headers=headers, data=payload)
-        self.logger.info("正在发送文件~")
+        logger.info("正在发送文件~")
         if response.status_code == 200:
-            self.logger.info("发送文件成功")
-            
-    def send_text_to_group(self,msg,):
+            logger.info("发送文件成功")
 
+    def send_file_to_陶健宏(self, file_type, file_name, file_path,type_file):
+        logger = get_run_logger()
+        url = "https://open.feishu.cn/open-apis/im/v1/messages"
+        params = {"receive_id_type": "user_id"}
+
+        file_key = self.get_filekey(file_path, file_name, file_type, type_file)
+
+        msgContent = {
+            "file_key": file_key,
+        }
+
+        req = {
+            "receive_id": "6e4997ed",
+            "msg_type": "file",
+            "content": json.dumps(msgContent)
+        }
+        payload = json.dumps(req)
+        Authorization = 'Bearer ' + self.token
+        headers = {
+            'Authorization': Authorization,
+            'Content-Type': 'application/json'
+        }
+        response = requests.request("POST", url, params=params, headers=headers, data=payload)
+        logger.info("正在发送文件到陶健宏~")
+        if response.status_code == 200:
+            logger.info("发送文件成功")
+
+
+    def send_text_to_group(self,msg,):
+        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "chat_id"}
         msgContent = {
@@ -143,12 +174,12 @@ class AsBot:
         }
         response = requests.request("POST", url, params=params, headers=headers, json=payload)
         if response.status_code == 200:
-            self.logger.info(f'{response.status_code}-发送成功')  # Print Response
+            logger.info(f'{response.status_code}-发送成功')  # Print Response
         else:
-            self.logger.info('好像不行哦~')
+            logger.info('好像不行哦~')
 
     def send_text_to_person(self,msg,user_id):
-
+        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "user_id"}
         msgContent = {
@@ -167,9 +198,9 @@ class AsBot:
         }
         response = requests.request("POST", url, params=params, headers=headers, json=payload)
         if response.status_code == 200:
-            self.logger.info(f'{response.status_code}-发送成功')  # Print Response
+            logger.info(f'{response.status_code}-发送成功')  # Print Response
         else:
-            self.logger.info('好像不行哦~')
+            logger.info('好像不行哦~')
 
     def send_post_to_group(self,msg):
         """
@@ -177,6 +208,7 @@ class AsBot:
         :param msg:
         :return:
         """
+        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "chat_id"}
         payload = {
@@ -192,9 +224,9 @@ class AsBot:
         }
         response = requests.request("POST", url, params=params, headers=headers, json=payload)
         if response.status_code == 200:
-            self.logger.info(f'{response.status_code}-发送成功')  # Print Response
+            logger.info(f'{response.status_code}-发送成功')  # Print Response
         else:
-            self.logger.info('好像不行哦~')
+            logger.info('好像不行哦~')
 
     def send_post_to_person(self,msg,user_id):
         # 消息的构造只需要一个msg_type指定post参数，content参数后面接zh-cn之后的内容,
@@ -203,6 +235,7 @@ class AsBot:
         :param user_id:
         :return:
         """
+        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "user_id"}
         payload = {
@@ -216,13 +249,13 @@ class AsBot:
         }
         response = requests.request("POST", url, params=params, headers=headers, json=payload)
         if response.status_code == 200:
-            self.logger.info(f'{response.status_code}-发送成功')  # Print Response
+            logger.info(f'{response.status_code}-发送成功')  # Print Response
         else:
-            self.logger.info('好像不行哦~')
+            logger.info('好像不行哦~')
 
-    
+
     def send_card_to_person(self,msg,user_id):
-  
+        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "user_id"}
         payload = {
@@ -236,12 +269,12 @@ class AsBot:
         }
         response = requests.request("POST", url, params=params, headers=headers, json=payload)
         if response.status_code == 200:
-            self.logger.info(f'{response.status_code}-发送成功')  # Print Response
+            logger.info(f'{response.status_code}-发送成功')  # Print Response
         else:
-            self.logger.info('好像不行哦~')
-            
-    def send_card_to_group(self,msg):
+            logger.info('好像不行哦~')
 
+    def send_card_to_group(self,msg):
+        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "chat_id"}
         payload = {
@@ -255,9 +288,9 @@ class AsBot:
         }
         response = requests.request("POST", url, params=params, headers=headers, json=payload)
         if response.status_code == 200:
-            self.logger.info(f'{response.status_code}-发送成功')  # Print Response
+            logger.info(f'{response.status_code}-发送成功')  # Print Response
         else:
-            self.logger.info('好像不行哦~')
+            logger.info('好像不行哦~')
             print(response.text)
 
 

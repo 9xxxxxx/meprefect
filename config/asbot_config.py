@@ -44,7 +44,7 @@ def get_input_file_path():
 def get_output_file_path():
     """生成输出文件路径"""
     outfilename = f"瑞云系统未发货清单截至{showdate()}.xlsx"
-    return fr'../data/output/{outfilename}'
+    return fr'E:\Dev\myprefect\data\output\{outfilename}'
 
 def get_send_file_name():
     outfilename = f"瑞云系统未发货清单截至{showdate()}.xlsx"
