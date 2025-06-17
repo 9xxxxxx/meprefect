@@ -6,7 +6,7 @@ import json
 
 
 class AsBot:
-    def __init__(self,chat_name):
+    def __init__(self,chat_name=None):
         self.app_id = asbot_config.APP_ID
         self.app_secret = asbot_config.APP_SECRET
         self.chat_name = chat_name

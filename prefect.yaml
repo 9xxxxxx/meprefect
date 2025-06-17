@@ -109,3 +109,16 @@ deployments:
     work_queue_name: timing-job
     job_variables: {}
   schedules: []
+
+- name: send_file_to_xy
+  version: 0.0.1
+  tags: []
+  concurrency_limit: null
+  description: send file to xy
+  entrypoint: flows/send_file_to_xy.py:feishu_notify_flow
+  parameters: {}
+  work_pool:
+    name: worning-pool
+    work_queue_name: timing-job
+    job_variables: {}
+  schedules: []
