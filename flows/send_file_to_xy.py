@@ -29,7 +29,7 @@ def query_rma_count():
         sql = f"""
             SELECT COUNT(new_rma_id) AS n 
             FROM maintenance_detail_ruiyun 
-            WHERE DATE_FORMAT(new_checkon,'%Y-%m-%d %H:%i:%s') 
+            WHERE DATE_FORMAT(new_checkon,'%Y-%m-%d %H:%i:%s')
                   BETWEEN '{yesterday}' AND '{today}'
               AND applytype IN ('退货','换货')
               AND productmodel_name = '产成品-吹风机'

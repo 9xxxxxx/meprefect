@@ -251,4 +251,3 @@ def sync_bi_data_flow():
     save_to_mysql(a_1)
     logger.info("所有任务已完成")
 
-

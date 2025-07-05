@@ -3,21 +3,16 @@
 # @Author : Garry-Host
 # @FileName: sync_db
 
-from prefect import flow, task, get_run_logger
 import hashlib
-import time
-import uuid
-from sqlalchemy import create_engine
-import requests
-from utils.asbot import AsBot
 import os
 import sys
+import time
+import uuid
+import pandas as pd
+import requests
+from prefect import flow, task, get_run_logger
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-import pandas as pd
-from datetime import datetime, timedelta
-
-
 
 # 强制切换 Windows 控制台为 UTF-8 编码
 if sys.platform.startswith("win"):

@@ -148,15 +148,20 @@ def process_checkgroup_efficiency_data():
     # data = data.query("产品类型 == '产成品-吹风机' or 产品类型 == '产成品-电动牙刷'").copy()
     # data = pd.concat([data, pj], ignore_index=True)
 
+    import numpy as np
 
     data['旧件签收时间'] = pd.to_datetime(data['旧件签收时间'])
     data['检测时间'] = pd.to_datetime(data['检测时间'])
     data['日期'] = data['检测时间'].dt.date
     data['时效'] = (data['检测时间'] - data['旧件签收时间']).dt.total_seconds() / 3600
+
     data['时效类型'] = pd.cut(data['时效'], bins=[0, 4, 8, 12,2480], labels=['4小时内', '4-8小时', '8-12小时','超12小时'])
+
     history = data[data['日期'] < date.today()].copy()
     today = data[data['日期'] == date.today()].copy()
+
     today.to_excel('wd.xlsx',index=False)
+
     history = pd.DataFrame(history['时效类型'].value_counts())
     history['占比'] = history['count'] / history['count'].sum()
     history = history.rename(columns={'count': '数量'})
@@ -292,7 +297,7 @@ def build_card_message() -> tuple[str, Any]:
         "type": "template",
         "data": {
             "template_id": "AAqBc0EeBjtyz",
-            "template_version_name": "1.0.22",
+            "template_version_name": "1.0.24",
             "template_variable": variables  # 动态变量部分
         }
     }

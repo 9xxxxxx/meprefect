@@ -1,8 +1,48 @@
 import requests
-from prefect import get_run_logger
 from requests_toolbelt import MultipartEncoder
 from config import asbot_config
 import json
+import logging
+from logging.handlers import TimedRotatingFileHandler
+import os
+
+def setup_logger(log_name='my_logger', log_dir='logs', level=logging.INFO):
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    logger = logging.getLogger(log_name)
+    logger.setLevel(level)
+    logger.propagate = False  # 防止重复打印日志
+
+    # 日志格式
+    formatter = logging.Formatter(
+        fmt="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+
+    # 控制台 handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+
+    # 文件 handler（按天滚动）
+    file_handler = TimedRotatingFileHandler(
+        filename=os.path.join(log_dir, f"{log_name}.log"),
+        when="midnight",  # 每天生成一个新文件
+        interval=1,
+        backupCount=7,     # 保留最近7天的日志
+        encoding='utf-8'
+    )
+    file_handler.setFormatter(formatter)
+
+    # 添加 handler
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+
+    return logger
+
+logger = setup_logger("as_bot")
+
+
 
 
 class AsBot:
@@ -15,7 +55,7 @@ class AsBot:
 
 
     def get_token(self):
-        logger = get_run_logger()
+        # 获取token
         url = 'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal'
         data = {
         "Content-Type": "application/json; charset=utf-8",
@@ -27,7 +67,7 @@ class AsBot:
         return json.loads(response.text)['tenant_access_token']
 
     def get_chat_id(self):
-        logger = get_run_logger()
+        # 获取群聊id
         url = "https://open.feishu.cn/open-apis/im/v1/chats?page_size=20"
         payload = ''
 
@@ -43,7 +83,7 @@ class AsBot:
                 return item['chat_id']
 
     def get_filekey(self, file_path, file_name, file_type, type_file):
-        logger = get_run_logger()
+        # 获取文件key
         url = "https://open.feishu.cn/open-apis/im/v1/files"
         form = {'file_type': file_type,
                 'file_name': file_name,
@@ -60,7 +100,7 @@ class AsBot:
             return '好像没拿到file key'
 
     def get_imagekey(self,path):
-        logger = get_run_logger()
+        # 获取图片key
         url = "https://open.feishu.cn/open-apis/im/v1/images"
         form = {'image_type': 'message',
                 'image': (open(path, 'rb'))}  # 需要替换具体的path
@@ -77,7 +117,7 @@ class AsBot:
             return '好像没拿到image key'
 
     def sendimage(self,image_path):
-        logger = get_run_logger()
+        # 发送图片
         msg = self.get_imagekey(image_path)
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type":"chat_id"}
@@ -101,7 +141,7 @@ class AsBot:
             logger.info("发送图片成功！")
 
     def sendfile(self, file_type, file_name, file_path,type_file):
-        logger = get_run_logger()
+        # 发送文件
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "chat_id"}
 
@@ -128,7 +168,7 @@ class AsBot:
             logger.info("发送文件成功")
 
     def send_file_to_陶健宏(self, file_type, file_name, file_path,type_file):
-        logger = get_run_logger()
+        # 发给文件给陶健宏
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "user_id"}
 
@@ -156,7 +196,7 @@ class AsBot:
 
 
     def send_text_to_group(self,msg,):
-        logger = get_run_logger()
+        # 发送文本信息到群组
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "chat_id"}
         msgContent = {
@@ -179,7 +219,7 @@ class AsBot:
             logger.info('好像不行哦~')
 
     def send_text_to_person(self,msg,user_id):
-        logger = get_run_logger()
+        # 发送文本信息
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "user_id"}
         msgContent = {
@@ -203,12 +243,12 @@ class AsBot:
             logger.info('好像不行哦~')
 
     def send_post_to_group(self,msg):
+        # 消息的构造只需要一个msg_type指定post参数，content参数后面接zh-cn之后的内容,
         """
-
+        发送富文本到群组
         :param msg:
         :return:
         """
-        logger = get_run_logger()
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "chat_id"}
         payload = {
@@ -227,6 +267,7 @@ class AsBot:
             logger.info(f'{response.status_code}-发送成功')  # Print Response
         else:
             logger.info('好像不行哦~')
+            print(response.json())
 
     def send_post_to_person(self,msg,user_id):
         # 消息的构造只需要一个msg_type指定post参数，content参数后面接zh-cn之后的内容,
@@ -235,7 +276,7 @@ class AsBot:
         :param user_id:
         :return:
         """
-        logger = get_run_logger()
+        
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "user_id"}
         payload = {
@@ -255,7 +296,7 @@ class AsBot:
 
 
     def send_card_to_person(self,msg,user_id):
-        logger = get_run_logger()
+        # 发送卡片到个人
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "user_id"}
         payload = {
@@ -274,7 +315,7 @@ class AsBot:
             logger.info('好像不行哦~')
 
     def send_card_to_group(self,msg):
-        logger = get_run_logger()
+        # 发送卡片到群组
         url = "https://open.feishu.cn/open-apis/im/v1/messages"
         params = {"receive_id_type": "chat_id"}
         payload = {
@@ -294,7 +335,7 @@ class AsBot:
             print(response.text)
 
 
-#消息示例
+#卡片消息示例
 # payload = json.dumps({
 #   "content": "{\"type\":\"template\",\"data\":{\"template_id\":\"AAqBc0EeBjtyz\",\"template_version_name\":\"1.0.2\",\"template_variable\":{\"title\":\"哇，真的是你啊\"}}}"
 # })
@@ -303,3 +344,29 @@ class AsBot:
 #   'Content-Type': 'application/json'
 # }
 
+# post 卡片信息示例
+# {
+#             "zh_cn": {
+#                 "title": "消息标题",  # 消息标题
+#                 "content": [  # 消息内容，由多个段落组成
+#                     [  # 第一个段落
+#                         {
+#                             "tag": "text",  # 文本元素
+#                             "text": "这是一段文本内容"
+#                         },
+#                         {
+#                             "tag": "a",  # 超链接元素
+#                             "text": "点击这里",
+#                             "href": "http://example.com"
+#                         }
+#                     ],
+#                     [  # 第二个段落
+#                         {
+#                             "tag": "at",  # @用户元素
+#                             "user_id": "ou_xxxxxx",  # 用户ID
+#                             "user_name": "用户名"  # 可选，显示名称
+#                         }
+#                     ]
+#                 ]
+#             }
+#         }

@@ -31,7 +31,7 @@ with t AS
 (
 select new_signedon , new_checkon , laifen_servicecompletetime , laifen_qualityrecordtime , new_deliveriedon ,new_returnstatus , case when applytype in ('换货','退货') then '退换货' else '寄修/返修' end applytype , productmodel_name
 from maintenance_detail_ruiyun 
-where productmodel_name in ('产成品-吹风机','产成品-电动牙刷')
+where productmodel_name in ('产成品-吹风机','产成品-电动牙刷','产成品-剃须刀')
   and new_status not in ('已取消')
   and new_signedon is not null
   and (date(new_signedon) between current_date()-interval 36 day and current_date()
