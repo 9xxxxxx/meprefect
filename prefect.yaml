@@ -122,3 +122,16 @@ deployments:
     work_queue_name: timing-job
     job_variables: {}
   schedules: []
+
+- name: send_jx_super_overtime_data
+  version: 0.0.1
+  tags: [ ]
+  concurrency_limit: null
+  description: send jx super overtime data
+  entrypoint: flows/send_super_overtime.py:send_data_flow
+  parameters: { }
+  work_pool:
+    name: worning-pool
+    work_queue_name: timing-job
+    job_variables: { }
+  schedules: []

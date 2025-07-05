@@ -149,14 +149,14 @@ def get_sf_data(days=15):
 
 
 @flow(name='发送寄修严重超时数据')
-def send_data():
+def send_data_flow():
     t1 = datetime.today().date()
     t2 = datetime(2025, 6, 1).date()
     dt = (t1 - t2).days + 3
     data = get_sf_data(dt)
     
     
-    with open(r"E:\Dev\myprefect\data\jx\over_power.json", "r", encoding="utf-8") as f:
+    with open(r"/data/jx/over_power.json", "r", encoding="utf-8") as f:
         bef = json.load(f)  # bef['yd'] 是上次的“昨日总量”
 
 
@@ -172,17 +172,17 @@ def send_data():
         (data['产品类型'].isin(['产成品-吹风机', '产成品-电动牙刷', '产成品-剃须刀']))
     ]['单号'].count()
 
-    last = data[
+    latest = data[
         (data['检测时间'] >= '2025-06-01') &
         (data['检测时间'] <= str(end_date2)) &
         (data['产品类型'].isin(['产成品-吹风机', '产成品-电动牙刷', '产成品-剃须刀']))
     ]['单号'].count()
-    print(first,last)
+    print(first,latest)
     less = bef['yd'] - first
-    more = last + less - bef['yd']
+    more = latest + less - bef['yd']
 
-    bef['yd'] = int(last)
-    with open(r"E:\Dev\myprefect\data\jx\over_power.json", "w", encoding="utf-8") as f:
+    bef['yd'] = int(latest)
+    with open(r"/data/jx/over_power.json", "w", encoding="utf-8") as f:
         json.dump(bef, f, ensure_ascii=False, indent=2)
         
     file_path = f"./data/jx/2025-06-01至{end_date2}分拣未发货数据明细.xlsx"
@@ -192,46 +192,51 @@ def send_data():
         (data['产品类型'].isin(['产成品-吹风机', '产成品-电动牙刷', '产成品-剃须刀']))
     ].to_excel(file_path,index=False)
 
-    message = (f"截止{end_date2}号之前分拣未发货数据\n"
-               f"寄修严重超时机器共{last}台\n"
-               f"环比{end_date1}号之前(2530)，减少{less}台\n"
-               f"今日新增{more}台，净增长{more-less}台")
-    print(message)
-    bot = asbot.AsBot('人机')
+    msg =  {
+        "zh_cn": {
+            "title": f"截止{end_date2}日数据",
+            "content": [
+                [
+                    {
+                        "tag": "text",
+                        "text": f"寄修严重超时机器共：{latest} 台\n",
+                    }
+                ],
+                [
+                    {
+                        "tag": "text",
+                        "text": f"环比 {end_date1} 号之前({bef['yd']}台)，"
+                    },
+                    {
+                        "tag": "text",
+                        "text": f"⬇️减少{less} 台\n",
+                    }
+                ],
+                [
+                    {
+                        "tag": "text",
+                        "text": f"⬆️今日新增：{more} 台，"
+                    },
+                    {
+                        "tag": "text",
+                        "text": f"净增长：{more-less} 台"
+                    },
+                ],
+                [
+                    {
+                        "tag": "at",
+                        "user_id": "6e4997ed",
+                    }
+                ]
+            ]
+        }
+    }
+
+
+    bot = asbot.AsBot('寄修严重超时跟进预警')
     bot.sendfile("xls", file_name=file_path.split('/')[-1], file_path=file_path,
                    type_file=asbot_config.TYPE_FILE)
-    bot.send_text_to_group(message)
-    
+    bot.send_post_to_group(msg)
     
 if __name__ == '__main__':
-    # send_data()
-    bot = asbot.AsBot('人机')
-    pp ={
-            "zh_cn": {
-                "title": "消息标题",  # 消息标题
-                "content": [  # 消息内容，由多个段落组成
-                    [  # 第一个段落
-                        {
-                            "tag": "text",  # 文本元素
-                            "text": "这是一段文本内容"
-                        },
-                        {
-                            "tag": "a",  # 超链接元素
-                            "text": "点击这里",
-                            "href": "http://example.com"
-                        }
-                    ],
-                    [  # 第二个段落
-                        {
-                            "tag": "at",  # @用户元素
-                            "user_id": "ou_xxxxxx",  # 用户ID
-                            "user_name": "用户名"  # 可选，显示名称
-                        }
-                    ]
-                ]
-            }
-        }
-
-
-
-    bot.send_post_to_group(pp)
+    send_data_flow()
