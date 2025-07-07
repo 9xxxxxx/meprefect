@@ -156,7 +156,7 @@ def send_data_flow():
     data = get_sf_data(dt)
     
     
-    with open(r"/data/jx/over_power.json", "r", encoding="utf-8") as f:
+    with open(r"E:\Dev\myprefect\data\jx\over_power.json", "r", encoding="utf-8") as f:
         bef = json.load(f)  # bef['yd'] 是上次的“昨日总量”
 
 
@@ -177,15 +177,14 @@ def send_data_flow():
         (data['检测时间'] <= str(end_date2)) &
         (data['产品类型'].isin(['产成品-吹风机', '产成品-电动牙刷', '产成品-剃须刀']))
     ]['单号'].count()
-    print(first,latest)
+
+    print(bef['yd'],first,latest)
+
     less = bef['yd'] - first
     more = latest + less - bef['yd']
 
-    bef['yd'] = int(latest)
-    with open(r"/data/jx/over_power.json", "w", encoding="utf-8") as f:
-        json.dump(bef, f, ensure_ascii=False, indent=2)
-        
-    file_path = f"./data/jx/2025-06-01至{end_date2}分拣未发货数据明细.xlsx"
+    file_path = f"E:/Dev/myprefect/data/jx/2025-06-01至{end_date2}分拣未发货数据明细.xlsx"
+
     data[
         (data['检测时间'] >= '2025-06-01') &
         (data['检测时间'] <= str(end_date2)) &
@@ -234,9 +233,12 @@ def send_data_flow():
 
 
     bot = asbot.AsBot('寄修严重超时跟进预警')
+    # bot = asbot.AsBot('人机')
     bot.sendfile("xls", file_name=file_path.split('/')[-1], file_path=file_path,
                    type_file=asbot_config.TYPE_FILE)
     bot.send_post_to_group(msg)
-    
+    bef['yd'] = int(latest)
+    with open(r"E:\Dev\myprefect\data\jx\over_power.json", "w", encoding="utf-8") as f:
+        json.dump(bef, f, ensure_ascii=False, indent=2)
 if __name__ == '__main__':
     send_data_flow()
