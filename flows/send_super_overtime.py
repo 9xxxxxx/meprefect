@@ -242,3 +242,4 @@ def send_data_flow():
         json.dump(bef, f, ensure_ascii=False, indent=2)
 if __name__ == '__main__':
     send_data_flow()
+
