@@ -267,7 +267,7 @@ class AsBot:
             logger.info(f'{response.status_code}-发送成功')  # Print Response
         else:
             logger.info('好像不行哦~')
-            print(response.json())
+
 
     def send_post_to_person(self,msg,user_id):
         # 消息的构造只需要一个msg_type指定post参数，content参数后面接zh-cn之后的内容,
